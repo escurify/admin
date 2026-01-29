@@ -235,7 +235,7 @@ export function TransactionDetailsDrawer({ transaction, onClose }: TransactionDe
                   Resolve Dispute
                 </Button>
               )}
-              {transaction.status === 'TRACKING_DONE' && (
+              {transaction.status === 'DISPATCHED' && (
                 <Button onClick={() => setShowCompleteConfirm(true)} className="flex-1">
                   <CheckCircle className="w-4 h-4" />
                   Mark Complete

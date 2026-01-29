@@ -42,7 +42,7 @@ export function getStatusBadgeVariant(status: string): BadgeVariant {
     case 'PENDING':
     case 'UNDER_REVIEW':
     case 'PENDING_PAYMENT':
-    case 'TRACKING_DONE':
+    case 'DISPATCHED':
       return 'warning';
     case 'REJECTED':
     case 'FAILED':

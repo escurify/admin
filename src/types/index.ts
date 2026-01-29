@@ -223,7 +223,7 @@ export interface ListBlockedUsersResponse {
 }
 
 // Transaction Types
-export type TransactionStatus = 'CREATED' | 'JOINED' | 'PENDING_PAYMENT' | 'PAID' | 'TRACKING_DONE' | 'DISPUTED' | 'RESOLVED' | 'COMPLETED';
+export type TransactionStatus = 'CREATED' | 'JOINED' | 'PENDING_PAYMENT' | 'PAID' | 'DISPATCHED' | 'DISPUTED' | 'RESOLVED' | 'COMPLETED';
 export type OwnerType = 'BUYER' | 'SELLER';
 export type DeliveryMethod = 'COURIER' | 'PICKUP' | 'DIGITAL' | 'IN_PERSON';
 
