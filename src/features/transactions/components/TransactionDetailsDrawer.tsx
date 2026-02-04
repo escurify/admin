@@ -18,6 +18,21 @@ import { Can } from '@/auth';
 import type { TransactionSearchResult, DisputedTransaction } from '@/types';
 import { format } from 'date-fns';
 
+// Helper to format dispute reason enum keys to display labels
+const DISPUTE_REASON_LABELS: Record<string, string> = {
+  ITEM_NOT_RECEIVED: 'Item Not Received',
+  ITEM_NOT_AS_DESCRIBED: 'Item Not As Described',
+  DAMAGED_ITEM: 'Damaged Item',
+  WRONG_ITEM: 'Wrong Item',
+  PAYMENT_ISSUE: 'Payment Issue',
+  OTHER: 'Other',
+};
+
+function formatDisputeReason(reason: string | undefined): string {
+  if (!reason) return '-';
+  return DISPUTE_REASON_LABELS[reason] || reason.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+}
+
 interface TransactionDetailsDrawerProps {
   transaction: (TransactionSearchResult | DisputedTransaction) | null;
   onClose: () => void;
@@ -114,7 +129,7 @@ export function TransactionDetailsDrawer({ transaction, onClose }: TransactionDe
                 <div>
                   <p className="font-medium text-red-700">Dispute Raised</p>
                   <p className="text-sm text-red-600 mt-1">
-                    <span className="font-medium">Reason:</span> {disputeData.disputeReason}
+                    <span className="font-medium">Reason:</span> {formatDisputeReason(disputeData.disputeReason)}
                   </p>
                   {disputeData.disputeDescription && (
                     <p className="text-sm text-red-600 mt-1">

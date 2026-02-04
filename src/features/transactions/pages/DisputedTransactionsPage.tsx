@@ -9,6 +9,21 @@ import { TransactionDetailsDrawer } from '../components/TransactionDetailsDrawer
 import type { DisputedTransaction } from '@/types';
 import { format } from 'date-fns';
 
+// Helper to format dispute reason enum keys to display labels
+const DISPUTE_REASON_LABELS: Record<string, string> = {
+  ITEM_NOT_RECEIVED: 'Item Not Received',
+  ITEM_NOT_AS_DESCRIBED: 'Item Not As Described',
+  DAMAGED_ITEM: 'Damaged Item',
+  WRONG_ITEM: 'Wrong Item',
+  PAYMENT_ISSUE: 'Payment Issue',
+  OTHER: 'Other',
+};
+
+function formatDisputeReason(reason: string | undefined): string {
+  if (!reason) return '-';
+  return DISPUTE_REASON_LABELS[reason] || reason.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+}
+
 export default function DisputedTransactionsPage() {
   const [page, setPage] = useState(1);
   const [selectedTransaction, setSelectedTransaction] = useState<DisputedTransaction | null>(null);
@@ -64,7 +79,7 @@ export default function DisputedTransactionsPage() {
       header: 'Reason',
       render: (item: DisputedTransaction) => (
         <span className="text-gray-600 text-sm max-w-xs truncate block">
-          {item.disputeReason || '-'}
+          {formatDisputeReason(item.disputeReason)}
         </span>
       ),
     },
