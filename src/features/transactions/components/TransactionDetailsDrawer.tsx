@@ -7,15 +7,16 @@ import {
   Clock,
   AlertTriangle,
   CheckCircle,
+  Scale,
 } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
 import { Button } from '@/components/ui/Button';
 import { Badge, getStatusBadgeVariant } from '@/components/ui/Badge';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ResolveDisputeModal } from './ResolveDisputeModal';
-import { useCompleteTransaction, useMarkResolved } from '../hooks/useTransactions';
+import { useCompleteTransaction, useResolveDisputeByAdmin } from '../hooks/useTransactions';
 import { Can } from '@/auth';
-import type { TransactionSearchResult, DisputedTransaction } from '@/types';
+import type { TransactionSearchResult, DisputedTransaction, AdminDisputeDecision } from '@/types';
 import { format } from 'date-fns';
 
 // Helper to format dispute reason enum keys to display labels
@@ -72,7 +73,7 @@ export function TransactionDetailsDrawer({ transaction, onClose }: TransactionDe
   const [showResolveModal, setShowResolveModal] = useState(false);
 
   const completeTransaction = useCompleteTransaction();
-  const markResolved = useMarkResolved();
+  const resolveDispute = useResolveDisputeByAdmin();
 
   if (!transaction) return null;
 
@@ -85,9 +86,14 @@ export function TransactionDetailsDrawer({ transaction, onClose }: TransactionDe
     });
   };
 
-  const handleResolve = (notes?: string) => {
-    markResolved.mutate(
-      { id: transaction.id, data: notes ? { resolutionNotes: notes } : undefined },
+  const handleResolve = (data: {
+    decision: AdminDisputeDecision;
+    buyerRefundAmount?: number;
+    sellerPayoutAmount?: number;
+    notes?: string;
+  }) => {
+    resolveDispute.mutate(
+      { id: transaction.id, data },
       {
         onSuccess: () => {
           setShowResolveModal(false);
@@ -98,6 +104,7 @@ export function TransactionDetailsDrawer({ transaction, onClose }: TransactionDe
   };
 
   const isDisputed = transaction.status === 'DISPUTED';
+  const isSplitSettled = transaction.status === 'SPLIT_SETTLED';
   const disputeData = transaction as DisputedTransaction;
 
   return (
@@ -115,10 +122,22 @@ export function TransactionDetailsDrawer({ transaction, onClose }: TransactionDe
 
           {/* Amount */}
           <div className="bg-primary-50 rounded-lg p-4">
-            <p className="text-xs font-medium text-primary-600 uppercase">Transaction Amount</p>
+            <p className="text-xs font-medium text-primary-600 uppercase">Deal Amount</p>
             <p className="text-2xl font-bold text-primary-700 mt-1">
               ₹{transaction.amount.toLocaleString()}
             </p>
+            {(transaction as any).buyerPaysAmount && (
+              <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-primary-500">Buyer pays: </span>
+                  <span className="font-semibold text-primary-700">₹{((transaction as any).buyerPaysAmount).toLocaleString()}</span>
+                </div>
+                <div>
+                  <span className="text-primary-500">Seller receives: </span>
+                  <span className="font-semibold text-primary-700">₹{((transaction as any).sellerReceivesAmount).toLocaleString()}</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Dispute Info */}
@@ -141,6 +160,21 @@ export function TransactionDetailsDrawer({ transaction, onClose }: TransactionDe
                       Disputed on {format(new Date(disputeData.disputedAt), 'MMM dd, yyyy hh:mm a')}
                     </p>
                   )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Split Settled Info */}
+          {isSplitSettled && (
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <div className="flex items-start gap-2">
+                <Scale className="w-5 h-5 text-orange-600 mt-0.5" />
+                <div>
+                  <p className="font-medium text-orange-700">Split Settlement</p>
+                  <p className="text-sm text-orange-600 mt-1">
+                    Partially Refunded to Buyer & Partially Paid to Seller
+                  </p>
                 </div>
               </div>
             </div>
@@ -229,13 +263,21 @@ export function TransactionDetailsDrawer({ transaction, onClose }: TransactionDe
                   isCompleted
                 />
               )}
-              {transaction.status === 'DISPUTED' && disputeData.disputedAt && (
+              {(transaction.status === 'DISPUTED' || isSplitSettled) && disputeData.disputedAt && (
                 <TimelineItem
                   icon={AlertTriangle}
                   title="Dispute Raised"
                   date={disputeData.disputedAt}
                   isCompleted
                   isWarning
+                />
+              )}
+              {isSplitSettled && (
+                <TimelineItem
+                  icon={Scale}
+                  title="Split Settled by Admin"
+                  date={transaction.lastUpdatedAt}
+                  isCompleted
                 />
               )}
             </div>
@@ -246,7 +288,7 @@ export function TransactionDetailsDrawer({ transaction, onClose }: TransactionDe
             <div className="flex gap-3 pt-4 border-t border-gray-200">
               {isDisputed && (
                 <Button onClick={() => setShowResolveModal(true)} className="flex-1">
-                  <CheckCircle className="w-4 h-4" />
+                  <Scale className="w-4 h-4" />
                   Resolve Dispute
                 </Button>
               )}
@@ -276,7 +318,8 @@ export function TransactionDetailsDrawer({ transaction, onClose }: TransactionDe
         isOpen={showResolveModal}
         onClose={() => setShowResolveModal(false)}
         onConfirm={handleResolve}
-        isLoading={markResolved.isPending}
+        isLoading={resolveDispute.isPending}
+        transactionAmount={transaction.amount}
       />
     </>
   );

@@ -223,9 +223,20 @@ export interface ListBlockedUsersResponse {
 }
 
 // Transaction Types
-export type TransactionStatus = 'CREATED' | 'JOINED' | 'PENDING_PAYMENT' | 'PAID' | 'DISPATCHED' | 'DISPUTED' | 'RESOLVED' | 'COMPLETED';
+export type TransactionStatus = 'CREATED' | 'JOINED' | 'PENDING_PAYMENT' | 'PAID' | 'DISPATCHED' | 'DISPUTED' | 'RESOLVED' | 'COMPLETED' | 'READY_FOR_PAYOUT' | 'PAYOUT_INITIATED' | 'FULFILLED' | 'REFUNDED' | 'CANCELLED' | 'SPLIT_SETTLED';
 export type OwnerType = 'BUYER' | 'SELLER';
-export type DeliveryMethod = 'COURIER' | 'PICKUP' | 'DIGITAL' | 'IN_PERSON';
+export type DeliveryMethod = 
+  // New delivery methods
+  | 'COURIER' 
+  | 'LOCAL_PICKUP_DROP' 
+  | 'IN_PERSON_HANDOVER' 
+  | 'DIGITAL_DELIVERY' 
+  | 'SERVICE_COMPLETION'
+  // Legacy values (backward compatibility)
+  | 'PICKUP'
+  | 'DIGITAL'
+  | 'IN_PERSON';
+export type AdminDisputeDecision = 'REFUND' | 'PAYOUT' | 'SPLIT';
 
 export interface TransactionParty {
   id: string;
@@ -271,6 +282,23 @@ export interface ListDisputedTransactionsResponse {
 
 export interface MarkResolvedRequest {
   resolutionNotes?: string;
+}
+
+export interface AdminResolveDisputeRequest {
+  decision: AdminDisputeDecision;
+  buyerRefundAmount?: number;
+  sellerPayoutAmount?: number;
+  notes?: string;
+}
+
+export interface AdminResolveDisputeResponse {
+  message: string;
+  transactionId: string;
+  decision: AdminDisputeDecision;
+  status: TransactionStatus;
+  buyerRefundAmount?: number;
+  sellerPayoutAmount?: number;
+  resolvedAt: string;
 }
 
 // API Response Types

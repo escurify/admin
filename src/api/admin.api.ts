@@ -12,6 +12,8 @@ import type {
   RejectKycRequest,
   SearchTransactionsResponse,
   ListDisputedTransactionsResponse,
+  AdminResolveDisputeRequest,
+  AdminResolveDisputeResponse,
 } from '@/types';
 
 // ============================================
@@ -122,6 +124,11 @@ export const adminTransactionsApi = {
     const response = await api.get<{ data: ListDisputedTransactionsResponse }>('/admin/transactions/disputed', {
       params: { page, limit },
     });
+    return response.data.data;
+  },
+
+  resolveDispute: async (id: string, data: AdminResolveDisputeRequest): Promise<AdminResolveDisputeResponse> => {
+    const response = await api.post<{ data: AdminResolveDisputeResponse }>(`/admin/transactions/${id}/resolve-dispute`, data);
     return response.data.data;
   },
 };

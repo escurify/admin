@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 
-type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info' | 'purple';
+type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info' | 'purple' | 'orange';
 
 interface BadgeProps {
   children: React.ReactNode;
@@ -15,6 +15,7 @@ const variantStyles: Record<BadgeVariant, string> = {
   danger: 'bg-red-100 text-red-700',
   info: 'bg-blue-100 text-blue-700',
   purple: 'bg-purple-100 text-purple-700',
+  orange: 'bg-orange-100 text-orange-700',
 };
 
 export function Badge({ children, variant = 'default', className }: BadgeProps) {
@@ -38,6 +39,7 @@ export function getStatusBadgeVariant(status: string): BadgeVariant {
     case 'VERIFIED':
     case 'COMPLETED':
     case 'RESOLVED':
+    case 'FULFILLED':
       return 'success';
     case 'PENDING':
     case 'UNDER_REVIEW':
@@ -47,13 +49,21 @@ export function getStatusBadgeVariant(status: string): BadgeVariant {
     case 'REJECTED':
     case 'FAILED':
     case 'DISPUTED':
+    case 'CANCELLED':
       return 'danger';
     case 'NOT_STARTED':
     case 'CREATED':
     case 'JOINED':
       return 'info';
     case 'PAID':
+    case 'READY_FOR_PAYOUT':
       return 'success';
+    case 'PAYOUT_INITIATED':
+      return 'purple';
+    case 'REFUNDED':
+      return 'warning';
+    case 'SPLIT_SETTLED':
+      return 'orange';
     default:
       return 'default';
   }

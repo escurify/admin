@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminTransactionsApi, transactionsApi } from '@/api';
-import type { MarkResolvedRequest } from '@/types';
+import type { MarkResolvedRequest, AdminResolveDisputeRequest } from '@/types';
 import toast from 'react-hot-toast';
 
 export const TRANSACTIONS_QUERY_KEYS = {
@@ -51,6 +51,27 @@ export function useMarkResolved() {
       transactionsApi.markResolved(id, data),
     onSuccess: () => {
       toast.success('Transaction dispute resolved');
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+    onError: () => {
+      toast.error('Failed to resolve dispute');
+    },
+  });
+}
+
+export function useResolveDisputeByAdmin() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: AdminResolveDisputeRequest }) =>
+      adminTransactionsApi.resolveDispute(id, data),
+    onSuccess: (result) => {
+      const labels: Record<string, string> = {
+        REFUND: 'Buyer refunded',
+        PAYOUT: 'Seller payout approved',
+        SPLIT: 'Split settlement applied',
+      };
+      toast.success(labels[result.decision] || 'Dispute resolved');
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
     },
     onError: () => {
