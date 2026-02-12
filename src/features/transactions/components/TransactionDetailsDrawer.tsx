@@ -8,6 +8,10 @@ import {
   AlertTriangle,
   CheckCircle,
   Scale,
+  Paperclip,
+  FileText,
+  Image as ImageIcon,
+  Film,
 } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
 import { Button } from '@/components/ui/Button';
@@ -154,6 +158,35 @@ export function TransactionDetailsDrawer({ transaction, onClose }: TransactionDe
                     <p className="text-sm text-red-600 mt-1">
                       <span className="font-medium">Description:</span> {disputeData.disputeDescription}
                     </p>
+                  )}
+                  {disputeData.disputeAttachments && disputeData.disputeAttachments.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-sm font-medium text-red-700 mb-1">
+                        <Paperclip className="w-3.5 h-3.5 inline mr-1" />
+                        Evidence ({disputeData.disputeAttachments.length} file{disputeData.disputeAttachments.length > 1 ? 's' : ''})
+                      </p>
+                      <div className="space-y-1">
+                        {disputeData.disputeAttachments.map((att, index) => (
+                          <a
+                            key={`${att.url}-${index}`}
+                            href={att.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-sm text-red-600 hover:text-red-800 hover:underline"
+                          >
+                            {att.type === 'application/pdf' ? (
+                              <FileText className="w-3.5 h-3.5 shrink-0" />
+                            ) : att.type.startsWith('video/') ? (
+                              <Film className="w-3.5 h-3.5 shrink-0" />
+                            ) : (
+                              <ImageIcon className="w-3.5 h-3.5 shrink-0" />
+                            )}
+                            <span className="truncate">{att.name}</span>
+                            <ExternalLink className="w-3 h-3 shrink-0" />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
                   )}
                   {disputeData.disputedAt && (
                     <p className="text-xs text-red-500 mt-2">

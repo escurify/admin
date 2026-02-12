@@ -269,9 +269,16 @@ export interface SearchTransactionsResponse {
   pagination: Pagination;
 }
 
+export interface DisputeAttachment {
+  url: string;
+  name: string;
+  type: string;
+}
+
 export interface DisputedTransaction extends TransactionSearchResult {
   disputeReason?: string;
   disputeDescription?: string;
+  disputeAttachments?: DisputeAttachment[];
   disputedAt?: string;
 }
 
