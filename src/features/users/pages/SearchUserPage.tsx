@@ -4,16 +4,23 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { UserDetailsDrawer } from '../components/UserDetailsDrawer';
+import { canonicalIndianMobile } from '@/utils/phone';
 
 export default function SearchUserPage() {
   const [phoneInput, setPhoneInput] = useState('');
   const [searchPhone, setSearchPhone] = useState<string | null>(null);
+  const [inputError, setInputError] = useState<string | null>(null);
 
   const handleSearch = () => {
-    const cleanPhone = phoneInput.replace(/\D/g, '');
-    if (cleanPhone.length >= 10) {
-      setSearchPhone(cleanPhone);
+    // The engine matches users by 91 + ten digits exactly; the bare ten digits
+    // the placeholder suggested were refused.
+    const phone = canonicalIndianMobile(phoneInput);
+    if (!phone) {
+      setInputError('Enter a 10-digit Indian mobile number.');
+      return;
     }
+    setInputError(null);
+    setSearchPhone(phone);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -44,9 +51,15 @@ export default function SearchUserPage() {
           </div>
           <Button onClick={handleSearch}>Search</Button>
         </div>
-        <p className="text-xs text-gray-500 mt-2">
-          Enter the user's phone number with or without country code
-        </p>
+        {inputError ? (
+          <p role="alert" className="text-xs text-red-600 mt-2">
+            {inputError}
+          </p>
+        ) : (
+          <p className="text-xs text-gray-500 mt-2">
+            Enter the user's phone number with or without country code
+          </p>
+        )}
       </div>
 
       {/* Empty State */}
