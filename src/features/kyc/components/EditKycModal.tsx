@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useUpdateKyc } from '../hooks/useKyc';
 import type { PendingKycSellerItem } from '@/types';
+import { nationalMobile } from '@/utils/phone';
 
 const editKycSchema = z.object({
   businessName: z.string().max(200).optional(),
@@ -17,7 +18,12 @@ const editKycSchema = z.object({
   pincode: z.string().regex(/^[0-9]{6}$/, 'Invalid pincode').optional().or(z.literal('')),
   contactPersonName: z.string().max(100).optional(),
   contactPersonEmail: z.string().email('Invalid email').optional().or(z.literal('')),
-  contactPersonPhone: z.string().regex(/^[0-9]{10}$/, 'Invalid phone').optional().or(z.literal('')),
+  // Ten digits on screen; the engine stores and requires 91 + ten (see onSubmit).
+  contactPersonPhone: z
+    .string()
+    .regex(/^[6-9][0-9]{9}$/, 'Enter a 10-digit Indian mobile number')
+    .optional()
+    .or(z.literal('')),
   accountHolderName: z.string().max(100).optional(),
   accountNumber: z.string().optional(),
   ifscCode: z.string().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, 'Invalid IFSC').optional().or(z.literal('')),
@@ -51,7 +57,9 @@ export function EditKycModal({ isOpen, onClose, seller }: EditKycModalProps) {
       pincode: '',
       contactPersonName: seller.basicDetails?.contactPersonName || '',
       contactPersonEmail: seller.basicDetails?.contactPersonEmail || '',
-      contactPersonPhone: seller.basicDetails?.contactPersonPhone || '',
+      // Stored as 91XXXXXXXXXX; shown as the ten digits. Prefilling the stored
+      // value failed the ten-digit check, which blocked saving ANY field.
+      contactPersonPhone: nationalMobile(seller.basicDetails?.contactPersonPhone),
       accountHolderName: '',
       accountNumber: '',
       ifscCode: '',
@@ -63,6 +71,9 @@ export function EditKycModal({ isOpen, onClose, seller }: EditKycModalProps) {
     const filteredData = Object.fromEntries(
       Object.entries(data).filter(([, value]) => value !== '' && value !== undefined)
     );
+    if (typeof filteredData.contactPersonPhone === 'string') {
+      filteredData.contactPersonPhone = `91${filteredData.contactPersonPhone}`;
+    }
 
     if (Object.keys(filteredData).length === 0) {
       onClose();
